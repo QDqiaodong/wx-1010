@@ -19,6 +19,7 @@ const form = ref({
   equipmentCode: '',
   name: '',
   frostResistanceSpec: '',
+  minTemperature: null as number | null,
   ageGroup: 'CHILD' as AgeGroup,
   category: '',
   status: 'AVAILABLE' as EquipmentStatus
@@ -43,7 +44,7 @@ const categoryOptions = [
 
 watch(() => props.equipment, (val) => {
   if (val) {
-    form.value = { ...val }
+    form.value = { ...val, minTemperature: val.minTemperature ?? null }
   }
 }, { immediate: true })
 
@@ -70,7 +71,11 @@ const handleCancel = () => {
         <el-input v-model="form.name" placeholder="请输入器材名称" />
       </el-form-item>
       <el-form-item label="耐寒规格">
-        <el-input v-model="form.frostResistanceSpec" placeholder="请输入耐寒规格" />
+        <el-input v-model="form.frostResistanceSpec" placeholder="请输入耐寒规格，如：防寒至 -20℃" />
+      </el-form-item>
+      <el-form-item label="抗冻下限(℃)">
+        <el-input-number v-model="form.minTemperature" :step="1" :precision="1" :min="-60" :max="20" placeholder="可留空" />
+        <span style="margin-left: 8px; color: #909399; font-size: 12px;">实测气温低于此值将禁止发装；留空则尝试从耐寒规格文本解析</span>
       </el-form-item>
       <el-form-item label="适配年龄段">
         <el-select v-model="form.ageGroup">

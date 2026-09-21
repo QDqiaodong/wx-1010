@@ -8,8 +8,10 @@ import com.icepark.entity.Session;
 import com.icepark.entity.SessionEquipment;
 import com.icepark.enums.AgeGroup;
 import com.icepark.enums.EquipmentStatus;
+import com.icepark.enums.IssueStatus;
 import com.icepark.repository.AdjustRecordRepository;
 import com.icepark.repository.EquipmentRepository;
+import com.icepark.repository.IssueRecordRepository;
 import com.icepark.repository.SessionEquipmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class SessionEquipmentService {
     private final SessionEquipmentRepository sessionEquipmentRepository;
     private final EquipmentRepository equipmentRepository;
     private final AdjustRecordRepository adjustRecordRepository;
+    private final IssueRecordRepository issueRecordRepository;
     private final SessionService sessionService;
     
     @Transactional
@@ -64,7 +67,16 @@ public class SessionEquipmentService {
                 .filter(se -> se.getEquipmentId().equals(equipmentId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("该器材未绑定到场次"));
-        
+
+        // 仍在游客手中时禁止解绑，避免出现流水悬空、器材既不能归还也不能再绑定
+        boolean hasOpenIssue = issueRecordRepository
+                .findFirstByEquipmentIdAndStatusOrderByIssueTimeDesc(equipmentId, IssueStatus.ISSUED)
+                .filter(r -> r.getSessionId().equals(sessionId))
+                .isPresent();
+        if (hasOpenIssue) {
+            throw new RuntimeException("该器材已发给游客且尚未归还，无法解绑，请先归还或结束场次");
+        }
+
         sessionEquipmentRepository.delete(sessionEquipment);
         
         Equipment equipment = equipmentRepository.findById(equipmentId).orElse(null);

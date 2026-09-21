@@ -23,6 +23,9 @@ public class EquipmentDTO {
     @NotBlank(message = "耐寒规格不能为空")
     @Size(max = 200, message = "耐寒规格长度不能超过200")
     private String frostResistanceSpec;
+
+    /** 抗冻下限（℃），可选；为空时后端尝试从耐寒规格文本解析 */
+    private java.math.BigDecimal minTemperature;
     
     @NotBlank(message = "适配年龄段不能为空")
     private String ageGroup;

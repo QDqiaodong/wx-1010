@@ -1,5 +1,5 @@
 import axios, { type AxiosResponse } from 'axios'
-import type { Equipment, Session, SessionEquipment, AdjustRecord, AgeGroupSummary, AgeGroup } from '@/types'
+import type { Equipment, Session, SessionEquipment, AdjustRecord, AgeGroupSummary, AgeGroup, IssueRecord, SessionIssueOverview, IssuePayload } from '@/types'
 
 const request = axios.create({
   baseURL: '/api',
@@ -32,7 +32,20 @@ export const sessionApi = {
   getById: (id: number): Promise<Session> => request.get(`/session/${id}`),
   create: (data: Omit<Session, 'id'>): Promise<Session> => request.post('/session', data),
   update: (id: number, data: Partial<Session>): Promise<Session> => request.put(`/session/${id}`, data),
-  delete: (id: number): Promise<void> => request.delete(`/session/${id}`)
+  delete: (id: number): Promise<void> => request.delete(`/session/${id}`),
+  start: (id: number): Promise<Session> => request.post(`/session/${id}/start`),
+  end: (id: number, operator: string): Promise<Session> => request.post(`/session/${id}/end`, { operator })
+}
+
+export const issueApi = {
+  getOverview: (sessionId: number): Promise<SessionIssueOverview> =>
+    request.get(`/session/${sessionId}/issue/overview`),
+  getRecords: (sessionId: number): Promise<IssueRecord[]> =>
+    request.get(`/session/${sessionId}/issue/records`),
+  issue: (sessionId: number, payload: IssuePayload): Promise<IssueRecord> =>
+    request.post(`/session/${sessionId}/issue`, payload),
+  returnIssue: (sessionId: number, issueId: number, operator: string): Promise<IssueRecord> =>
+    request.put(`/session/${sessionId}/issue/${issueId}/return`, { operator })
 }
 
 export const sessionEquipmentApi = {

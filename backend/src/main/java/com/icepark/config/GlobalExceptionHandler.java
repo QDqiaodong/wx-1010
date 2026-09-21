@@ -8,13 +8,25 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.icepark.exception.ConflictException;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-    
+
+    /** 并发冲突：器材已被领用 / 重复归还等，明确返回 409 */
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(ConflictException e) {
+        log.warn("业务冲突: {}", e.getMessage());
+        Map<String, String> response = new HashMap<>();
+        response.put("error", e.getMessage());
+        response.put("code", "CONFLICT");
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException e) {
         log.error("运行时异常: {}", e.getMessage(), e);

@@ -56,9 +56,10 @@ public class EquipmentService {
         equipment.setEquipmentCode(dto.getEquipmentCode());
         equipment.setName(dto.getName());
         equipment.setFrostResistanceSpec(dto.getFrostResistanceSpec());
+        equipment.setMinTemperature(dto.getMinTemperature());
         equipment.setAgeGroup(AgeGroup.valueOf(dto.getAgeGroup().toUpperCase()));
         equipment.setCategory(dto.getCategory());
-        equipment.setStatus(dto.getStatus() != null ? 
+        equipment.setStatus(dto.getStatus() != null ?
                 EquipmentStatus.valueOf(dto.getStatus().toUpperCase()) : EquipmentStatus.AVAILABLE);
         
         Equipment saved = equipmentRepository.save(equipment);
@@ -81,6 +82,7 @@ public class EquipmentService {
         equipment.setEquipmentCode(dto.getEquipmentCode());
         equipment.setName(dto.getName());
         equipment.setFrostResistanceSpec(dto.getFrostResistanceSpec());
+        equipment.setMinTemperature(dto.getMinTemperature());
         equipment.setAgeGroup(AgeGroup.valueOf(dto.getAgeGroup().toUpperCase()));
         equipment.setCategory(dto.getCategory());
         if (dto.getStatus() != null) {
@@ -126,6 +128,7 @@ public class EquipmentService {
         dto.setEquipmentCode(equipment.getEquipmentCode());
         dto.setName(equipment.getName());
         dto.setFrostResistanceSpec(equipment.getFrostResistanceSpec());
+        dto.setMinTemperature(equipment.getMinTemperature());
         dto.setAgeGroup(equipment.getAgeGroup().name());
         dto.setCategory(equipment.getCategory());
         dto.setStatus(equipment.getStatus().name());
