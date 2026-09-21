@@ -21,6 +21,11 @@ const routes = [
     component: () => import('@/views/SessionBinding.vue')
   },
   {
+    path: '/dispatch',
+    name: 'dispatch',
+    component: () => import('@/views/DispatchDesk.vue')
+  },
+  {
     path: '/adjust',
     name: 'adjust',
     component: () => import('@/views/AdjustManagement.vue')

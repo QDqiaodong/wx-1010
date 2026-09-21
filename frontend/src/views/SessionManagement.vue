@@ -38,6 +38,10 @@ const handleBinding = (id: number) => {
   router.push(`/session/${id}/binding`)
 }
 
+const handleDispatch = (id: number) => {
+  router.push({ path: '/dispatch', query: { sessionId: String(id) } })
+}
+
 const handleSubmit = async (data: Omit<Session, 'id'>) => {
   if (editingSession.value) {
     await sessionApi.update(editingSession.value.id, data)
@@ -88,6 +92,7 @@ const handleCancel = () => {
       <el-table-column label="操作">
         <template #default="scope">
           <el-button size="small" @click="handleBinding((scope.row as Session).id)">器材绑定</el-button>
+          <el-button size="small" type="warning" @click="handleDispatch((scope.row as Session).id)">入场发装</el-button>
           <el-button size="small" @click="handleEdit(scope.row as Session)">编辑</el-button>
           <el-button size="small" type="danger" @click="handleDelete((scope.row as Session).id)">删除</el-button>
         </template>

@@ -23,6 +23,9 @@ yarn-error.log*
 .idea/
 .vscode/
 *.iml
+.trae/
+.codex/
+.codex-fixes/
 .env.local
 .env
 .env.*.local

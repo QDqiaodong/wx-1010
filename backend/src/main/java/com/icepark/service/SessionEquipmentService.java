@@ -7,6 +7,7 @@ import com.icepark.entity.Equipment;
 import com.icepark.entity.Session;
 import com.icepark.entity.SessionEquipment;
 import com.icepark.enums.AgeGroup;
+import com.icepark.enums.BindDispatchStatus;
 import com.icepark.enums.EquipmentStatus;
 import com.icepark.repository.AdjustRecordRepository;
 import com.icepark.repository.EquipmentRepository;
@@ -29,26 +30,31 @@ public class SessionEquipmentService {
     private final EquipmentRepository equipmentRepository;
     private final AdjustRecordRepository adjustRecordRepository;
     private final SessionService sessionService;
+    private final EquipmentDispatchService equipmentDispatchService;
     
     @Transactional
     public SessionEquipmentDTO bindEquipment(Long sessionId, Long equipmentId, String targetAgeGroup) {
         if (sessionEquipmentRepository.existsBySessionIdAndEquipmentId(sessionId, equipmentId)) {
             throw new RuntimeException("该器材已绑定到场次");
         }
-        
+
+        // 已在其他进行中场次发给游客且未归还的器材，不允许绑定到新场次
+        equipmentDispatchService.assertEquipmentNotOutstanding(equipmentId);
+
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("器材不存在，ID: " + equipmentId));
-        
+
         SessionEquipment sessionEquipment = new SessionEquipment();
         sessionEquipment.setSessionId(sessionId);
         sessionEquipment.setEquipmentId(equipmentId);
         sessionEquipment.setTargetAgeGroup(AgeGroup.valueOf(targetAgeGroup.toUpperCase()));
-        
+        sessionEquipment.setDispatchStatus(BindDispatchStatus.AVAILABLE);
+
         SessionEquipment saved = sessionEquipmentRepository.save(sessionEquipment);
-        
+
         equipment.setStatus(EquipmentStatus.IN_USE);
         equipmentRepository.save(equipment);
-        
+
         return convertToDTO(saved);
     }
     
@@ -60,6 +66,9 @@ public class SessionEquipmentService {
     
     @Transactional
     public void unbindEquipment(Long sessionId, Long equipmentId) {
+        // 已发出未归还的器材不允许解绑，避免流水悬空、器材无法归还
+        equipmentDispatchService.assertNotOutstandingInSession(sessionId, equipmentId);
+
         SessionEquipment sessionEquipment = sessionEquipmentRepository.findBySessionId(sessionId).stream()
                 .filter(se -> se.getEquipmentId().equals(equipmentId))
                 .findFirst()

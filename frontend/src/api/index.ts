@@ -1,5 +1,15 @@
 import axios, { type AxiosResponse } from 'axios'
-import type { Equipment, Session, SessionEquipment, AdjustRecord, AgeGroupSummary, AgeGroup } from '@/types'
+import type {
+  Equipment,
+  Session,
+  SessionEquipment,
+  AdjustRecord,
+  AgeGroupSummary,
+  AgeGroup,
+  SessionDispatchItem,
+  EquipmentDispatchRecord,
+  IssueRequest
+} from '@/types'
 
 const request = axios.create({
   baseURL: '/api',
@@ -32,7 +42,20 @@ export const sessionApi = {
   getById: (id: number): Promise<Session> => request.get(`/session/${id}`),
   create: (data: Omit<Session, 'id'>): Promise<Session> => request.post('/session', data),
   update: (id: number, data: Partial<Session>): Promise<Session> => request.put(`/session/${id}`, data),
-  delete: (id: number): Promise<void> => request.delete(`/session/${id}`)
+  delete: (id: number): Promise<void> => request.delete(`/session/${id}`),
+  start: (id: number): Promise<Session> => request.post(`/session/${id}/start`),
+  endSession: (id: number): Promise<Session> => request.post(`/session/${id}/end`)
+}
+
+export const dispatchApi = {
+  getItems: (sessionId: number): Promise<SessionDispatchItem[]> =>
+    request.get(`/session/${sessionId}/dispatch/items`),
+  getRecords: (sessionId: number): Promise<EquipmentDispatchRecord[]> =>
+    request.get(`/session/${sessionId}/dispatch/records`),
+  issue: (sessionId: number, data: IssueRequest): Promise<EquipmentDispatchRecord> =>
+    request.post(`/session/${sessionId}/dispatch/issue`, data),
+  returnEquipment: (sessionId: number, recordId: number, operator: string): Promise<EquipmentDispatchRecord> =>
+    request.post(`/session/${sessionId}/dispatch/records/${recordId}/return`, { operator })
 }
 
 export const sessionEquipmentApi = {
